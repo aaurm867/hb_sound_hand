@@ -1,5 +1,5 @@
 % Parameters
-joystick=true;
+joystick=false;
 
 frequency=20;
 xy_speed=0.2;
@@ -18,6 +18,7 @@ delta_t=1/frequency;
 addpath('./lib/mjhaptix/');
 hx_close()
 hx_connect('');
+hx_robot_info();
 
 % Initialize controller
 if joystick
@@ -29,6 +30,7 @@ rosshutdown;
 rosinit();
 rate=rosrate(frequency);
 
+i=0
 %Loop
 while mj_connected() == 1
     
@@ -80,10 +82,22 @@ while mj_connected() == 1
     mj_set_mocap(mocap);
     mj_set_control(control);
     
+    geom=mj_get_geom();
+    obj_pos=geom.pos(38:40,:);
+    dist_hand_sphere=norm(obj_pos(1,:)-mj_get_onebody(6).pos.'); % 6 is the ID of the palm
+    dist_hand_box=norm(obj_pos(2,:)-mj_get_onebody(6).pos.'); % 6 is the ID of the palm
+    dist_hand_ellipsoid=norm(obj_pos(3,:)-mj_get_onebody(6).pos.'); % 6 is the ID of the palm
+    amplitude=1/exp(10*dist_hand_sphere)
+    if i==30 % Plays note every 30 iterations
+            play_note('E5',2,amplitude,'no_pause')
+            i=0;
+    end
+    i=i+1;
+    %robot_sensor=hx_read_sensors().imu_orientation
     time = rate.TotalElapsedTime;
-    fprintf('Time Elapsed: %f\n',time)
-    disp(mocap.pos)
-    disp(control.ctrl(1:10).')
+    %fprintf('Time Elapsed: %f\n',time)
+    %disp(mocap.pos)
+    %disp(control.ctrl(1:10).')
     waitfor(rate);
 end
 fprintf("Disconnected\n")

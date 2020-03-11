@@ -1,7 +1,7 @@
 % TODO: make it sound like a motor: https://www.youtube.com/watch?v=zTvsOQjNbCc
 
-function play_note(notes,duration,no_pause)
-    if nargin<3
+function play_note(notes,duration,amplitude,no_pause)
+    if nargin<4
         no_pause=0;
     else
         no_pause=no_pause=='no_pause';
@@ -18,7 +18,7 @@ function play_note(notes,duration,no_pause)
         note_str=notes{i};
         note=60+(find(strcmp(all_notes,note_str(1:end-1)))-1)+(note_str(end)-'4')*12;
         freq=440 * 2^((note-69)/12);
-        a=a+sin(2*pi* freq*values)/length(notes).*(1-1./(exp(200*values))).*(1./(exp(3*values)));
+        a=a+amplitude*sin(2*pi* freq*values)/length(notes).*(1-1./(exp(200*values))).*(1./(exp(3*values)));
     end
     sound(a,fs)
     if ~no_pause
