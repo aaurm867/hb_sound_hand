@@ -18,6 +18,7 @@ delta_t=1/frequency;
 addpath('./lib/mjhaptix/');
 hx_close()
 hx_connect('');
+info=hx_robot_info();
 
 % Initialize controller
 if joystick
@@ -28,6 +29,9 @@ end
 rosshutdown;
 rosinit();
 rate=rosrate(frequency);
+
+%Load motor sound
+[motor,fs]=audioread('motor.mp3');
 
 %Loop
 while mj_connected() == 1
@@ -81,9 +85,18 @@ while mj_connected() == 1
     mj_set_control(control);
     
     time = rate.TotalElapsedTime;
-    fprintf('Time Elapsed: %f\n',time)
-    disp(mocap.pos)
-    disp(control.ctrl(1:10).')
+    %fprintf('Time Elapsed: %f\n',time)
+    %disp(mocap.pos)
+    %disp(control.ctrl(1:10).')
+    sensor=hx_read_sensors();
+    total_torque=sum(abs(sensor.motor_torque));
+    disp(total_torque)
+    amp=1-1/exp(total_torque/10);
+    disp(amp)
+    
     waitfor(rate);
+    disp(rate.statistics);
+    play_motor({motor,fs},'B4',delta_t*2,amp,'no_pause');
+    
 end
 fprintf("Disconnected\n")
